@@ -1,7 +1,9 @@
 const express = require('express');
 const app = express();
 
-const routes = require('./routes')
+const routes = require('./routes');
+
+app.set('view engine', 'ejs')
 
 //Habilitar arquivos statics
 app.use(express.static("public"));
