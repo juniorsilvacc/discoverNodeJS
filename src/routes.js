@@ -33,7 +33,7 @@ const Job = {
           ...job,
           remaining,
           status,
-          budget: profile['value-hours'] * job['total-hours']
+          budget: Profile.data['value-hours'] * job['total-hours']
         }
         
       });
@@ -50,7 +50,7 @@ const Job = {
 
     save(req, res){
       const lastId = Job.data[Job.data.length - 1].id || 1;
-      jobs.push({
+      Job.data.push({
         id: lastId + 1,
         name: req.body.name,
         "daily-hours": req.body["daily-hours"],
@@ -82,14 +82,43 @@ const Job = {
   }
 }
 
-const profile = {
-  name: "Junior Silva",
-  avatar: "https://avatars.githubusercontent.com/u/43589505?v=4",
-  "monthly-budget": 3000,
-  "hours-per-day": 5,
-  "days-per-week": 5,
-  "vacation-per-year": 4,
-  "value-hours": 75
+const Profile = {
+  data:{
+    name: "Junior Silva",
+    avatar: "https://avatars.githubusercontent.com/u/43589505?v=4",
+    "monthly-budget": 3000,
+    "hours-per-day": 5,
+    "days-per-week": 5,
+    "vacation-per-year": 4,
+    "value-hours": 75
+  },
+  controllers: {
+    index(req, res){
+      return res.render(views + "profile", {profile: Profile.data})
+    },
+    
+    update(req, res){
+      //req.body para pegar os dados
+      const data = req.body;
+      //definir quantas semanas tem no ano
+      const weeksPerYear = 52;
+      //remover as semanas de ferias do ano, para pegar quantas semanas tem 1 mês
+      const weeksPerMonth = (weeksPerYear - data["vacation-per-year"]) / 12;
+      //total de horas trabalhadas na semana
+      const weekTotalHours = data["hours-per-day"] * data["days-per-week"];
+      //horas trabalhadas no mêses
+      const monthlyTotalHours = weekTotalHours * weeksPerMonth;
+      //qual será o valor da minha hora
+      const valueHours = data["value-hours"] = data["monthly-budget"] / monthlyTotalHours
+
+      Profile.data = {
+        ...Profile.data,
+        ...req.body,
+        "value-hours": valueHours
+      }
+      return res.redirect("/profile")
+    },
+  }
 } 
 
 routes.get("/", Job.controllers.index);
@@ -97,6 +126,8 @@ routes.get("/job", Job.controllers.create);
 routes.post("/job", Job.controllers.save);
 
 routes.get("/job/edit", (req, res) => res.render(views + "job-edit"));
-routes.get("/profile", (req, res) => res.render(views + "profile", {profile}));
+
+routes.get("/profile", Profile.controllers.index);
+routes.post("/profile", Profile.controllers.update);
 
 module.exports = routes;
