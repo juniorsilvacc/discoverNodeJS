@@ -97,7 +97,7 @@ const Profile = {
       return res.render(views + "profile", {profile: Profile.data})
     },
     
-    update(req, res){
+    update(req, res){ 
       //req.body para pegar os dados
       const data = req.body;
       //definir quantas semanas tem no ano
